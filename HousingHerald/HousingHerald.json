@@ -1,0 +1,15 @@
+{
+  "Author": "Fuwa Aika",
+  "Name": "Housing Herald",
+  "Punchline": "Automatic house bidding reminders!",
+  "Description": "Upon login, reminds you if it's the entry period and you haven't bid on a house yet. If you have bid, get reminders to check the plot once the results period comes around!",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "house",
+    "housing",
+    "bid",
+	"lottery",
+	"reminder",
+	"plot"
+  ]
+}
