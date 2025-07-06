@@ -1,0 +1,41 @@
+name: Update README with version
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Grants write access to repository contents
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Extract version from .csproj
+      id: extract_version
+      run: |
+        # Extract version from the .csproj file
+        VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" HousingHerald/HousingHerald.csproj)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Update README with version
+      run: |
+        # Update the version in the badge URL in README.md
+        sed -i "s/version-[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*/version-$VERSION/" README.md
+
+    - name: Commit changes
+      run: |
+        # Commit the changes if the README was modified
+        if [[ $(git status --porcelain) ]]; then
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update version badge in README to $VERSION"
+          git push
+        fi
