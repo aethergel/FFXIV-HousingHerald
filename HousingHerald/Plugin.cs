@@ -82,8 +82,6 @@ public sealed class Plugin : IDalamudPlugin
         // Housing Placard Window closes
         AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, AddonHousingSignBoardName, OnHousingSignBoardPreFinalize);
 
-        AddonLifecycle.RegisterListener(AddonEvent.PostSetup, OnAnyAddonSetup);
-
         Log.Debug("Registered listeners successfully!");
     }
 
@@ -122,7 +120,6 @@ public sealed class Plugin : IDalamudPlugin
         AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, AddonHousingSignBoardName, OnHousingSignBoardPostSetup);
         AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, AddonHousingSignBoardName, OnHousingSignBoardPostRequestedUpdate);
         AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, AddonHousingSignBoardName, OnHousingSignBoardPreFinalize);
-        AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, OnAnyAddonSetup);
     }
 
     private void OnBidTeleportLinkClick(uint cmdId, SeString seString)
@@ -146,11 +143,6 @@ public sealed class Plugin : IDalamudPlugin
     private void DrawUI() => WindowSystem.Draw();
 
     public void ToggleMainUI() => MainWindow.Toggle();
-
-    private void OnAnyAddonSetup(AddonEvent eventType, AddonArgs args)
-    {
-        Log.Debug($"Addon setup: {args.AddonName}");
-    }
 
     #region Listeners
     // Listeners //////////////////////////////////////////////////////////////////////////////////////////////////////
