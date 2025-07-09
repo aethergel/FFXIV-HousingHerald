@@ -32,7 +32,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private const string MainCommandName = "/pherald";
     private const string AddonSelectYesNoTextScrollName = "SelectYesNoTextScroll";
-    private const string AddonSelectOkName = "SelectOk";
+    private const string AddonSelectYesnoName = "SelectYesno";
     private const string AddonHousingSignBoardName = "HousingSignBoard";
 
     public Configuration Configuration { get; init; }
@@ -42,7 +42,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private readonly DalamudLinkPayload bidTeleportPayload;
     private IAddonEventHandle? clickCancelEventHandle;
-    private IAddonEventHandle? clickOkEventHandle;
+    private IAddonEventHandle? clickYesEventHandle;
     private bool housingSignBoardOpen = false;
     public HousePlotInfo? currentlyViewedPlot = null;
 
@@ -71,9 +71,9 @@ public sealed class Plugin : IDalamudPlugin
         AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, AddonSelectYesNoTextScrollName, OnSelectYesNoTextScrollPreFinalize);
 
         // Bid Result Window opens
-        AddonLifecycle.RegisterListener(AddonEvent.PostSetup, AddonSelectOkName, OnSelectOkPostSetup);
+        AddonLifecycle.RegisterListener(AddonEvent.PostSetup, AddonSelectYesnoName, OnSelectYesnoPostSetup);
         // Bid Result Window closes
-        AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, AddonSelectOkName, OnSelectOkPreFinalize);
+        AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, AddonSelectYesnoName, OnSelectYesnoPreFinalize);
 
         // Housing Placard Window opens
         AddonLifecycle.RegisterListener(AddonEvent.PostSetup, AddonHousingSignBoardName, OnHousingSignBoardPostSetup);
@@ -109,16 +109,16 @@ public sealed class Plugin : IDalamudPlugin
             clickCancelEventHandle = null;
         }
 
-        if (clickOkEventHandle != null)
+        if (clickYesEventHandle != null)
         {
-            AddonEventManager.RemoveEvent(clickOkEventHandle);
-            clickOkEventHandle = null;
+            AddonEventManager.RemoveEvent(clickYesEventHandle);
+            clickYesEventHandle = null;
         }
 
         AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, AddonSelectYesNoTextScrollName, OnSelectYesNoTextScrollPostSetup);
         AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, AddonSelectYesNoTextScrollName, OnSelectYesNoTextScrollPreFinalize);
-        AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, AddonSelectOkName, OnSelectOkPostSetup);
-        AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, AddonSelectOkName, OnSelectOkPreFinalize);
+        AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, AddonSelectYesnoName, OnSelectYesnoPostSetup);
+        AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, AddonSelectYesnoName, OnSelectYesnoPreFinalize);
         AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, AddonHousingSignBoardName, OnHousingSignBoardPostSetup);
         AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, AddonHousingSignBoardName, OnHousingSignBoardPostRequestedUpdate);
         AddonLifecycle.UnregisterListener(AddonEvent.PreFinalize, AddonHousingSignBoardName, OnHousingSignBoardPreFinalize);
@@ -164,7 +164,7 @@ public sealed class Plugin : IDalamudPlugin
 
         // NodeId for "Confirm" button is 5
         // NodeId for "Cancel" button is 6
-        const uint ConfirmButtonNodeId = 6;
+        const uint ConfirmButtonNodeId = 5;
 
         var compNode = addon->GetComponentNodeById(ConfirmButtonNodeId);
         if (compNode == null)
@@ -197,44 +197,40 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
-    private unsafe void OnSelectOkPostSetup(AddonEvent eventType, AddonArgs args)
+    private unsafe void OnSelectYesnoPostSetup(AddonEvent eventType, AddonArgs args)
     {
         if (housingSignBoardOpen == false)
             return;
 
-        var addon = (AtkUnitBase*)args.Addon;
+        var addon = (AddonSelectYesno*)args.Addon;
 
-        // NodeId for "Ok" button is ???
-        const uint OkButtonNodeId = 1;
-
-        var compNode = addon->GetComponentByNodeId(OkButtonNodeId);
-        if (compNode == null)
+        if (addon == null || addon->YesButton == null || addon->YesButton->OwnerNode == null)
         {
-            Log.Error("'Ok' button node not found.");
+            Log.Error("AddonSelectYesno or YesButton or its OwnerNode is null.");
             return;
         }
 
-        Log.Debug($"Attaching handler to 'Ok' button via NodeId {OkButtonNodeId}.");
-        clickOkEventHandle = AddonEventManager.AddEvent(
+        Log.Debug($"Attaching handler to 'Yes' button via NodeId {addon->YesButton->OwnerNode->NodeId}.");
+        clickYesEventHandle = AddonEventManager.AddEvent(
             (nint)addon,
-            (nint)compNode,
+            (nint)addon->YesButton->OwnerNode,
             AddonEventType.ButtonClick,
-            OnOkClicked
+            OnYesClicked
         );
 
-        if (clickOkEventHandle != null)
-            Log.Debug("'clickOkEventHandle' attached successfully.");
+        if (clickYesEventHandle != null)
+            Log.Debug("'clickYesEventHandle' attached successfully.");
         else
-            Log.Error("Failed to attach 'clickOkEventHandle'.");
+            Log.Error("Failed to attach 'clickYesEventHandle'.");
     }
 
-    private unsafe void OnSelectOkPreFinalize(AddonEvent eventType, AddonArgs args)
+    private unsafe void OnSelectYesnoPreFinalize(AddonEvent eventType, AddonArgs args)
     {
-        if (clickOkEventHandle != null)
+        if (clickYesEventHandle != null)
         {
-            AddonEventManager.RemoveEvent(clickOkEventHandle);
-            clickOkEventHandle = null;
-            Log.Debug("'clickOkEventHandle' removed successfully.");
+            AddonEventManager.RemoveEvent(clickYesEventHandle);
+            clickYesEventHandle = null;
+            Log.Debug("'clickYesEventHandle' removed successfully.");
         }
     }
 
@@ -320,9 +316,9 @@ public sealed class Plugin : IDalamudPlugin
         Configuration.Save();
     }
 
-    private void OnOkClicked(AddonEventType type, AddonEventData data)
+    private void OnYesClicked(AddonEventType type, AddonEventData data)
     {
-        Log.Debug("User clicked 'Ok' on the housing results confirmation.");
+        Log.Debug("User clicked 'Yes' on the housing results confirmation.");
 
         Configuration.PlayerCheckedBid = true;
         Configuration.Save();
@@ -334,7 +330,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         var playerBid = Configuration.PlayerBid;
 
-        if (playerBid == null)
+        if (playerBid == null || Configuration.PlayerCheckedBid == true)
         {
             return;
         }
@@ -380,7 +376,7 @@ public sealed class Plugin : IDalamudPlugin
         var parts = text.Split(',', StringSplitOptions.TrimEntries);
         if (parts.Length != 3)
         {
-            Log.Error("Could not parse address info!");
+            Log.Error("Could not parse address info! If it is the Entry Phase and the Placard clearly states the Address, please contact the mod author.");
             return null;
         }
 
@@ -390,7 +386,7 @@ public sealed class Plugin : IDalamudPlugin
 
         if (!plotMatch.Success || !wardMatch.Success)
         {
-            Log.Error("Could not parse address info!");
+            Log.Error("Could not parse address info! If it is the Entry Phase and the Placard clearly states the Address, please contact the mod author.");
             return null;
         }
 

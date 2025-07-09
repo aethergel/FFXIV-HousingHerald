@@ -18,6 +18,8 @@ public class HousePlotInfo
     {
         if (EntryPhaseEndsAt == null)
             return "Unknown";
+        else if (DateTime.Now > EntryPhaseEndsAt)
+            return GetResultsPhaseEndsAt()!.Value.ToString(CultureInfo.CurrentCulture);
         else
             return EntryPhaseEndsAt.Value.ToString(CultureInfo.CurrentCulture);
     }

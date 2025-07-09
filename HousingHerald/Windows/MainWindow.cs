@@ -1,9 +1,5 @@
 using Dalamud.Interface;
-using Dalamud.Interface.Components;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using Dalamud.Plugin;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 using System;
 using System.Drawing;
@@ -59,16 +55,23 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
-        var oldTime = configuration.PlayerBid.EntryPhaseEndsAt;
-        configuration.PlayerBid.EntryPhaseEndsAt = DateTime.Now.AddHours(-1);
-
         if (configuration.PlayerBid == null)
         {
             ImGui.TextColored(KnownColor.Gray.Vector(), "No current bid!");
         }
         else
         {
-            ImGui.Text(configuration.PlayerBid?.ToString());
+            if (ImGui.Selectable(configuration.PlayerBid.ToString()))
+            {
+                ImGui.SetClipboardText(configuration.PlayerBid.ToString());
+            }
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Copy to Clipboard");
+                ImGui.EndTooltip();
+            }
         }
 
         ImGui.Separator();
@@ -118,7 +121,6 @@ public class MainWindow : Window, IDisposable
                 }
             }
         }
-        configuration.PlayerBid.EntryPhaseEndsAt = oldTime;
     }
 
     private string GetHoursAndMinsRemaining()
