@@ -1,5 +1,5 @@
 # Housing Herald
-[![Version Number](https://img.shields.io/badge/version-1.1.3.0-ff6262)](https://github.com/mashirochan/FFXIV-HousingHerald)
+[![Version Number](https://img.shields.io/badge/version-0.0.1-ff6262)](https://github.com/mashirochan/FFXIV-HousingHerald)
 [![Download Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fqzysathwfhebdai6xgauhz4q7m0mzmrf.lambda-url.us-east-1.on.aws%2FHousingHerald&color=%23ff6262)](https://github.com/mashirochan/FFXIV-HousingHerald)
 [![Availability](https://img.shields.io/badge/availability-testing-orange)](https://github.com/mashirochan/FFXIV-HousingHerald)
 
