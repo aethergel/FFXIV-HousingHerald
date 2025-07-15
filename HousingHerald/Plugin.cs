@@ -322,7 +322,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         var playerBid = Configuration.PlayerBid;
 
-        if (playerBid == null || Configuration.PlayerCheckedBid == true)
+        if (playerBid == null)
         {
             return;
         }
@@ -334,9 +334,16 @@ public sealed class Plugin : IDalamudPlugin
             Configuration.PlayerBid = null;
             Configuration.PlayerCheckedBid = false;
             Configuration.Save();
+            return;
         }
+
+        if (Configuration.PlayerCheckedBid == true)
+        {
+            return;
+        }
+
         // If it's currently past when the Entry Phase was supposed to end, notify them that their bid is ready
-        else if (DateTime.Now > playerBid.EntryPhaseEndsAt)
+        if (DateTime.Now > playerBid.EntryPhaseEndsAt)
         {
             if (PluginInterface.InstalledPlugins.Any(p => p.Name == "Lifestream" && p.IsLoaded == true))
             {
