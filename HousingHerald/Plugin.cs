@@ -1,4 +1,5 @@
 using Dalamud.Game.Addon.Events;
+using Dalamud.Game.Addon.Events.EventDataTypes;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Command;
@@ -63,7 +64,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
         ClientState.Login += OnLogin;
 
-        bidTeleportPayload = PluginInterface.AddChatLinkHandler(0, OnBidTeleportLinkClick);
+        bidTeleportPayload = Chat.AddChatLinkHandler(0, OnBidTeleportLinkClick);
 
         // Bid Confirmation Window opens
         AddonLifecycle.RegisterListener(AddonEvent.PostSetup, AddonSelectYesNoTextScrollName, OnSelectYesNoTextScrollPostSetup);
@@ -99,7 +100,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         MainWindow.Dispose();
         CommandManager.RemoveHandler(MainCommandName);
-        PluginInterface.RemoveChatLinkHandler();
+        Chat.RemoveChatLinkHandler();
 
         if (clickCancelEventHandle != null)
         {
@@ -152,7 +153,7 @@ public sealed class Plugin : IDalamudPlugin
         if (housingSignBoardOpen == false)
             return;
 
-        var addon = (AtkUnitBase*)args.Addon;
+        var addon = (AtkUnitBase*)args.Addon.Address;
 
         // NodeId for "Confirm" button is 5
         // NodeId for "Cancel" button is 6
@@ -194,7 +195,7 @@ public sealed class Plugin : IDalamudPlugin
         if (housingSignBoardOpen == false)
             return;
 
-        var addon = (AddonSelectYesno*)args.Addon;
+        var addon = (AddonSelectYesno*)args.Addon.Address;
 
         if (addon == null || addon->YesButton == null || addon->YesButton->OwnerNode == null)
         {
@@ -236,7 +237,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         Log.Debug("Housing placard update received!");
 
-        var addon = (AtkUnitBase*)args.Addon;
+        var addon = (AtkUnitBase*)args.Addon.Address;
 
         // NodeId for "Address" text is 56
         const uint AddressTextNodeId = 56;
